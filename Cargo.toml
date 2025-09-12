@@ -4,3 +4,14 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+thiserror="1"
+async-openai = "0.29.3"
+clap = { version = "4.5.47", features = ["derive"] }
+tokio = { version = "1.47.1", features = ["full"] }
+
+[dependencies.uuid]
+version = "1.18.1"
+features = ["v4"]
+
+[dev-dependencies]
+anyhow="1"
