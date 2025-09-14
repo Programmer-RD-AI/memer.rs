@@ -5,30 +5,24 @@ use async_openai::{
 };
 use clap::Parser;
 use dotenv::dotenv;
-use uuid::Uuid;
+
+use crate::utils::{get_default_uuid_directory, load_prompt};
 mod utils;
-fn get_default_uuid_file_name(file_type: Option<String>) -> String {
-    format!(
-        "{}.{}",
-        Uuid::new_v4(),
-        file_type.unwrap_or_else(|| "png".to_string()),
-    )
-}
 
 #[derive(Parser, Debug)]
-#[command(name="memer", version, about, long_about=None)]
+#[command(name="memer", author, version, about, long_about=None)]
 struct Args {
     #[arg(short, long)]
     query: String,
 
-    #[arg(short, long, default_value_t=get_default_uuid_file_name(None))]
-    file: String,
+    #[arg(short, long, default_value_t=get_default_uuid_directory())]
+    folder: String,
 }
 
 async fn generate_image(query: &str, dir: &str) -> Result<(), OpenAIError> {
     let client = Client::new();
     let request = CreateImageRequestArgs::default()
-        .prompt(query)
+        .prompt(load_prompt(query))
         .response_format(ImageResponseFormat::B64Json)
         .size(ImageSize::S1024x1024)
         .model(ImageModel::DallE3)
@@ -42,5 +36,5 @@ async fn generate_image(query: &str, dir: &str) -> Result<(), OpenAIError> {
 async fn main() {
     dotenv().ok();
     let args = Args::parse();
-    generate_image(&args.query, &args.file).await.unwrap();
+    generate_image(&args.query, &args.folder).await.unwrap();
 }
