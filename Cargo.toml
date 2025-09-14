@@ -3,7 +3,7 @@ name = "member-rs"
 version = "0.1.0"
 edition = "2024"
 description="a meme generation rust cli tool"
-license="Apache License 2.0"
+license="Apache-2.0"
 repository="https://github.com/Programmer-RD-AI/memer.rs"
 readme="README.md"
 
