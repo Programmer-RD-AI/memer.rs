@@ -1,11 +1,12 @@
 use async_openai::{
     Client,
-    types::{CreateImageRequestArgs, ImageResponseFormat, ImageSize},
+    error::OpenAIError,
+    types::{CreateImageRequestArgs, ImageModel, ImageResponseFormat, ImageSize},
 };
 use clap::Parser;
-use std::error::Error;
+use dotenv::dotenv;
 use uuid::Uuid;
-
+mod utils;
 fn get_default_uuid_file_name(file_type: Option<String>) -> String {
     format!(
         "{}.{}",
@@ -24,13 +25,13 @@ struct Args {
     file: String,
 }
 
-async fn generate_image(query: &str, dir: &str) -> Result<(), Box<dyn Error>> {
+async fn generate_image(query: &str, dir: &str) -> Result<(), OpenAIError> {
     let client = Client::new();
     let request = CreateImageRequestArgs::default()
         .prompt(query)
-        .response_format(ImageResponseFormat::Url)
+        .response_format(ImageResponseFormat::B64Json)
         .size(ImageSize::S1024x1024)
-        .user("memer")
+        .model(ImageModel::DallE3)
         .build()?;
     let response = client.images().create(request).await?;
     response.save(dir).await?;
@@ -39,6 +40,7 @@ async fn generate_image(query: &str, dir: &str) -> Result<(), Box<dyn Error>> {
 
 #[tokio::main]
 async fn main() {
+    dotenv().ok();
     let args = Args::parse();
     generate_image(&args.query, &args.file).await.unwrap();
 }
