@@ -32,7 +32,7 @@ cargo build --release
 ### From Crates.io
 
 ```bash
-cargo install member-rs
+cargo install memer-rs
 ```
 
 ## Setup
