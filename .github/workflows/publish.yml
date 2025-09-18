@@ -22,6 +22,9 @@ jobs:
       - name: Login into crates.io
         run: cargo login ${{ secrets.CRATES_IO_TOKEN }}
 
+      - name: Bump Up Version
+        run: cargo release patch
+
       - name: Build
         run: cargo build --verbose
 
