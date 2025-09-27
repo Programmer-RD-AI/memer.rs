@@ -3,6 +3,7 @@
 A Rust CLI tool for generating memes using OpenAI's DALL-E 3 API.
 
 [![Docker Image](https://img.shields.io/badge/Docker-Hub-blue?logo=docker)](https://hub.docker.com/r/programmerrdai/memer)
+[![Crates.io](https://img.shields.io/crates/v/memer-rs.svg)](https://crates.io/crates/memer-rs)
 
 ## Description
 
