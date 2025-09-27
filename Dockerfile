@@ -1,19 +1,20 @@
 ARG APP_NAME=memer
 
-FROM rust:latest-alpine AS build
+FROM rust:alpine AS build
 ARG APP_NAME
 WORKDIR /app
 
 RUN apk add --no-cache clang lld musl-dev git;
 
+# Build with mounts for speed
 RUN --mount=type=bind,source=src,target=src \
     --mount=type=bind,source=Cargo.toml,target=Cargo.toml \
     --mount=type=bind,source=Cargo.lock,target=Cargo.lock \
-    --mount=type=cache,target=/app/target/ \
+    --mount=type=cache,target=/app/target \
     --mount=type=cache,target=/usr/local/cargo/git/db \
-    --mount=type=cache,target=/usr/local/cargo/registry/ \
-cargo build --locked --release && \
-cp ./target/release/$APP_NAME /bin/memer; 
+    --mount=type=cache,target=/usr/local/cargo/registry \
+    cargo build --locked --release && \
+    cp /app/target/release/$APP_NAME /usr/local/bin/memer;
 
 FROM alpine:3.18 AS final
 
@@ -30,6 +31,6 @@ RUN adduser \
 
 USER user
 
-COPY --from=build /bin/memer /bin/
+COPY --from=build /usr/local/bin/memer /bin/
 
 ENTRYPOINT ["/bin/memer"]
