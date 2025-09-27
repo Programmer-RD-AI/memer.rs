@@ -4,16 +4,19 @@
 
 use std::fs;
 
+use log::{debug, info};
 use minijinja::{context, Environment};
 use uuid::Uuid;
 
 const BASE_PROMPT_FILE_PATH: &str = "src/prompts/base.jinja";
 
 pub fn load_prompt(query: &str) -> Box<str> {
+    info!("loading prompt for query: {}", query);
     let mut env = Environment::new();
     let loaded_prompt: &str = &load_file(None);
     env.add_template("memer", loaded_prompt).unwrap();
     let template = env.get_template("memer").unwrap();
+    info!("rendering template");
     template
         .render(context!(query => query))
         .unwrap()
@@ -22,12 +25,16 @@ pub fn load_prompt(query: &str) -> Box<str> {
 }
 
 fn load_file(path: Option<&str>) -> Box<str> {
-    fs::read_to_string(path.unwrap_or(BASE_PROMPT_FILE_PATH))
+    let file_path = path.unwrap_or(BASE_PROMPT_FILE_PATH);
+    info!("loading file from path: {}", file_path);
+    fs::read_to_string(file_path)
         .unwrap()
         .to_owned()
         .into_boxed_str()
 }
 
 pub fn get_default_uuid_directory() -> String {
-    Uuid::new_v4().to_string()
+    let uuid = Uuid::new_v4().to_string();
+    debug!("generated uuid for directory: {}", &uuid);
+    uuid
 }
