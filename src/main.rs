@@ -1,15 +1,15 @@
-use crate::utils::{get_default_uuid_directory, load_prompt, get_progress_bar, increment_progress_bar};
+use anyhow::{anyhow, Context, Result};
 use async_openai::{
-    error::OpenAIError,
     types::{CreateImageRequestArgs, ImageModel, ImageResponseFormat, ImageSize},
     Client,
 };
 use clap::Parser;
 use clap_verbosity_flag::Verbosity;
 use dotenv::dotenv;
-use log::{debug, info, error};
-mod config;
-mod utils;
+use log::{debug, error, info};
+use memer_rs::utils::{
+    get_default_uuid_directory, get_progress_bar, increment_progress_bar, load_prompt,
+};
 
 #[derive(Parser, Debug)]
 #[command(name="memer", author, version, about, long_about=None)]
@@ -24,7 +24,7 @@ struct Args {
     verbosity: Verbosity,
 }
 
-async fn generate_image(query: &str, dir: &str) -> Result<String, OpenAIError> {
+async fn generate_image(query: &str, dir: &str) -> Result<String> {
     info!("generating image for query: {}", query);
     increment_progress_bar().await;
     let client = Client::new();
@@ -35,18 +35,26 @@ async fn generate_image(query: &str, dir: &str) -> Result<String, OpenAIError> {
         .response_format(ImageResponseFormat::B64Json)
         .size(ImageSize::S1024x1024)
         .model(ImageModel::DallE3)
-        .build()?;
+        .build()
+        .context("Error Building Request")?;
     increment_progress_bar().await;
     debug!("sending request to OpenAI");
     increment_progress_bar().await;
-    let response = client.images().create(request).await?;
+    let response = client
+        .images()
+        .create(request)
+        .await
+        .context("Error Getting Response")?;
     increment_progress_bar().await;
     info!("saving image to directory: {}", dir);
-    let saved_paths = response.save(dir).await?;
+    let saved_paths = response.save(dir).await.context("Error Saving")?;
     increment_progress_bar().await;
     info!("image saved successfully");
-    let saved_path = saved_paths.get(0).ok_or_else(|| error!("tet"));
-    Ok(saved_path.unwrap().to_string_lossy().to_string())
+    let saved_path = saved_paths.get(0).ok_or_else(|| {
+        error!("no saved path found");
+        anyhow!("no saved path found")
+    })?;
+    Ok(saved_path.to_string_lossy().to_string())
 }
 
 #[tokio::main]
