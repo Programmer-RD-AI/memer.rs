@@ -2,6 +2,9 @@
 
 A Rust CLI tool for generating memes using OpenAI's DALL-E 3 API.
 
+[![Docker Image](https://img.shields.io/badge/Docker-Hub-blue?logo=docker)](https://hub.docker.com/r/programmerrdai/memer)
+[![Crates.io](https://img.shields.io/crates/v/memer-rs.svg)](https://crates.io/crates/memer-rs)
+
 ## Description
 
 memer.rs is a command-line interface that allows you to generate meme images by simply providing a text query. The tool uses OpenAI's DALL-E 3 model to create internet-style memes with bold, impact font text and high-contrast visuals.
