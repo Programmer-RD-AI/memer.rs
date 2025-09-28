@@ -1,4 +1,4 @@
-use crate::utils::{get_default_uuid_directory, load_prompt};
+use crate::utils::{get_default_uuid_directory, load_prompt, get_progress_bar, increment_progress_bar};
 use async_openai::{
     error::OpenAIError,
     types::{CreateImageRequestArgs, ImageModel, ImageResponseFormat, ImageSize},
@@ -7,8 +7,7 @@ use async_openai::{
 use clap::Parser;
 use clap_verbosity_flag::Verbosity;
 use dotenv::dotenv;
-use log::{debug, info};
-use memer_rs::utils::{get_progress_bar, increment_progress_bar};
+use log::{debug, info, error};
 mod config;
 mod utils;
 
@@ -46,11 +45,8 @@ async fn generate_image(query: &str, dir: &str) -> Result<String, OpenAIError> {
     let saved_paths = response.save(dir).await?;
     increment_progress_bar().await;
     info!("image saved successfully");
-    let saved_path = saved_paths.get(0);
-    if saved_path.is_none() {
-        "".to_owned() // TODO: Fix with Custom Errors
-    }
-    Ok(saved_path.to_owned())
+    let saved_path = saved_paths.get(0).ok_or_else(|| error!("tet"));
+    Ok(saved_path.unwrap().to_string_lossy().to_string())
 }
 
 #[tokio::main]
@@ -60,8 +56,8 @@ async fn main() {
     env_logger::Builder::new()
         .filter_level(cli.verbosity.log_level_filter())
         .init();
-    generate_image(&cli.query, &cli.folder).await.unwrap();
+    let genrated_path = generate_image(&cli.query, &cli.folder).await.unwrap();
     get_progress_bar()
         .await
-        .finish_with_message("Image Generated at");
+        .finish_with_message(format!("Image Generated to: {}", genrated_path));
 }
