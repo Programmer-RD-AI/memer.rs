@@ -4,11 +4,11 @@
 
 use std::fs;
 
+use crate::config::{BASE_PROMPT_FILE_PATH, PROGRESS_BAR};
+use indicatif::ProgressBar;
 use log::{debug, info};
 use minijinja::{context, Environment};
 use uuid::Uuid;
-
-const BASE_PROMPT_FILE_PATH: &str = "src/prompts/base.jinja";
 
 pub fn load_prompt(query: &str) -> Box<str> {
     info!("loading prompt for query: {}", query);
@@ -37,4 +37,15 @@ pub fn get_default_uuid_directory() -> String {
     let uuid = Uuid::new_v4().to_string();
     debug!("generated uuid for directory: {}", &uuid);
     uuid
+}
+
+pub async fn get_progress_bar() -> &'static ProgressBar {
+    PROGRESS_BAR
+        .get_or_init(|| async { ProgressBar::new(6) })
+        .await
+}
+
+pub async fn increment_progress_bar() {
+    let progres_bar = get_progress_bar().await;
+    progres_bar.inc(1);
 }
